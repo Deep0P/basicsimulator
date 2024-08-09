@@ -144,17 +144,17 @@ int main()
     cout<<"befare adding into cache \n";
     cache.display();
 
-    cache.put(0x00000000, 10);  // Address 0x00000000
-    cache.put(0x00000004, 20);  // Address 0x00000004
-    cache.put(0x00000007, 30);  // Address 0x00000008
-    cache.put(0x0000000C, 40);  // Address 0x0000000C
-    cache.put(0x00000010, 50);  // Address 0x00000010
+    cache.put(0x00000000, 10);  
+    cache.put(0x00000004, 20);  
+    cache.put(0x00000007, 30);  
+    cache.put(0x0000000C, 40); 
+    cache.put(0x00000010, 50);  
     cout<<"after inserting into cache\n";
     cache.display();
 
-    cache.get(0x00000000);  // Cache hit
-    cache.get(0x00000004);  // Cache hit
-    cache.get(0x00000010);  // Cache hit
-    cache.get(0x00000014);  // Cache miss (assuming it wasn't put in the cache yet)
+    cache.get(0x00000000);  
+    cache.get(0x00000004);  
+    cache.get(0x00000010);  
+    cache.get(0x00000014);  
 
 }
