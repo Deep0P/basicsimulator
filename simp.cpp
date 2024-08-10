@@ -2,6 +2,7 @@
 #include<vector>
 #include<iomanip>
 #include<utility>
+#include<cmath>
 
 using namespace std;
 
@@ -17,7 +18,7 @@ class memory
         memo.push_back(make_pair(add,data));
     }
 
-    int getData(uint32_t add)
+    int getMemData(uint32_t add)
     {
         for (const  auto& kv :memo)
         {
@@ -31,7 +32,7 @@ class memory
         return -1;
     }
 
-    void update(uint32_t add ,int data)
+    void updateMem(uint32_t add ,int data)
     {
         for ( auto& kv :memo)
         {
@@ -54,6 +55,9 @@ class memory
 
 };
 
+    memory m1;
+
+
 class cacheline
 {
     int tag;
@@ -66,7 +70,7 @@ class cacheline
     {
         tag=-1;
         valid=false;
-        data.assign(0,0);
+        data.assign(0,-1);
     }
 
     cacheline(int blockSize)
@@ -106,6 +110,12 @@ class cacheline
         data[offset/4]=ndata;
     }
 
+    void updateData(int offset, int ndata,int ntag)
+    {
+        data[offset]=ndata;
+        tag=ntag;
+    }
+
 
 };
 
@@ -113,12 +123,18 @@ class DirectMappedCache{
     cacheline* cacheBlock;
     int numBlocks;
     int blockSize;
+    int numTagBits;
+    int numIndexBits;
+    int numOffsetBits;
 
     public:
         DirectMappedCache(int nblocks, int size)
         {
             numBlocks=nblocks;
             blockSize=size;
+            numTagBits=29;
+            numIndexBits=3;
+            numOffsetBits=0;
 
             cacheBlock= new cacheline[numBlocks];
             for (int i=0; i<numBlocks;i++)
@@ -128,11 +144,19 @@ class DirectMappedCache{
 
         }
 
-        int get(int address)
+        void setBits()
         {
-            int tag = address >> 3;
-            int index= (address >> 3) & 0x7;
-            int offset = 0;
+            numOffsetBits=log2(blockSize);
+            numIndexBits= log2(numBlocks);
+            numTagBits=32 - numOffsetBits - numIndexBits;
+
+        }
+
+        int get(uint32_t address)
+        {
+            int tag = address >> numTagBits;
+            int index= address >> numIndexBits& 0x7;
+            int offset = address >>numOffsetBits & 0x7;
 
             if (cacheBlock[index].getValid() && cacheBlock[index].getTag() == tag)
             {
@@ -143,12 +167,27 @@ class DirectMappedCache{
             else
             {
                 cout<< "Cache miss!\n";
-                return -1;
+                cout<<"Getting Data from memory\n";
+                int data=m1.getMemData(address);
+                cout<<"Updateing Cache Value\n";
+                cacheBlock[index].updateData(offset,data,tag);
+                cout<<"Acessing Value from Cache\n";
+                if (cacheBlock[index].getValid() && cacheBlock[index].getTag() == tag)
+                {
+                vector<int> data=cacheBlock[index].getData();
+                cout<<"cache hit\n Data: "<<data[offset/4]<<endl;
+                return data[offset /4];
+                }
+                else{
+                    cout<<"Data not found\n";
+                    cacheBlock[index].putValid(false);
+                    return -1;
+                }
             }
 
         }
 
-        void put(int address, int value)
+        void put(uint32_t address, int value)
         {
             int tag = address >> 3;
             int index= address & 0x7;
@@ -190,7 +229,6 @@ class DirectMappedCache{
 int main()
 {
 
-    memory m1;
     
     m1.displayMemory();
 
@@ -199,6 +237,9 @@ int main()
     m1.writer(2,30);
     m1.writer(3,40);
     m1.writer(4,50);
+    m1.writer(5,60);
+    m1.writer(6,70);
+    m1.writer(7,80);
 
     m1.displayMemory();
 
@@ -206,7 +247,7 @@ int main()
     int numBlocks = 8; 
     int blockSize = 1; 
     DirectMappedCache cache(numBlocks, blockSize);
-    cout<<"befare adding into cache \n";
+    cout<<"before adding into cache \n";
     cache.display();
 
     cache.put(0x00000000, 10);  
@@ -221,5 +262,7 @@ int main()
     cache.get(0x00000004);  
     cache.get(0x00000010); 
     cache.get(0x00000014); 
+    cache.display();
+
 
 }
