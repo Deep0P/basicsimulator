@@ -46,7 +46,7 @@ class memory
 
     void displayMemory()
     {
-        cout<<"Adrress\t|\tData\n";
+        cout<<"Adrress\t\t|\tData\n";
         for (auto & kv : memo)
         {
             cout<<"0x"<<setw(8)<<setfill('0')<<hex<<kv.first<<"\t|\t"<<dec<<kv.second<<endl;
@@ -154,9 +154,11 @@ class DirectMappedCache{
 
         int get(uint32_t address)
         {
-            int tag = address >> numTagBits;
-            int index= address >> numIndexBits& 0x7;
-            int offset = address >>numOffsetBits & 0x7;
+            int tag = address >> 3;
+            int index= address & 0x7;
+            int offset = 0;
+
+
 
             if (cacheBlock[index].getValid() && cacheBlock[index].getTag() == tag)
             {
@@ -169,8 +171,8 @@ class DirectMappedCache{
                 cout<< "Cache miss!\n";
                 cout<<"Getting Data from memory\n";
                 int data=m1.getMemData(address);
-                cout<<"Updateing Cache Value\n";
-                cacheBlock[index].updateData(offset,data,tag);
+                cout<<"Updating Cache Value\n";
+                put(address,data);
                 cout<<"Acessing Value from Cache\n";
                 if (cacheBlock[index].getValid() && cacheBlock[index].getTag() == tag)
                 {
@@ -180,7 +182,7 @@ class DirectMappedCache{
                 }
                 else{
                     cout<<"Data not found\n";
-                    cacheBlock[index].putValid(false);
+                    // cacheBlock[index].putValid(false);
                     return -1;
                 }
             }
@@ -192,7 +194,11 @@ class DirectMappedCache{
             int tag = address >> 3;
             int index= address & 0x7;
             int offset = 0;
+
             bool valid=true;
+
+            cout<<(address >> numIndexBits);
+
 
             cacheBlock[index].putTag(tag);
             cacheBlock[index].putValid(valid);
@@ -201,19 +207,26 @@ class DirectMappedCache{
 
         void display()
         {
-            cout<<" Cache Content\n";
+            cout<<"\t Cache Content\n";
+            cout<<"Index\t|\tTag\t|\tValid\t|\tData\t|\n";
+
             
 
             for(int i=0;i<numBlocks;i++)
             {
-                cout<< "Index " << i << ": Tag = " << cacheBlock[i].getTag() 
-                    << ", Valid = " << (cacheBlock[i].getValid() ? "true" : "false") 
-                    << ", Data = ";
+                cout<< i << "\t|\t" << cacheBlock[i].getTag() 
+                    << "\t|\t" << (cacheBlock[i].getValid() ? "true" : "false") 
+                    << "\t|\t";
                 vector<int> data=cacheBlock[i].getData();
             for (int j = 0; j < blockSize; ++j) {
                 cout<<data[j]<<" ";
             }
-            cout<<endl;
+            // cout<<endl;
+            // for(int k=0;k<100;k++)
+            // {
+            //     cout<<"_";
+            // }
+            cout<<"\t|\n";
             }
         }
 
@@ -250,17 +263,23 @@ int main()
     cout<<"before adding into cache \n";
     cache.display();
 
-    cache.put(0x00000000, 10);  
-    cache.put(0x00000004, 20);  
-    cache.put(0x00000007, 30); 
-    cache.put(0x0000000C, 40);  
-    cache.put(0x00000010, 50);  
+    // cache.put(0x00000000, 10);  
+    // cache.put(0x00000004, 20);  
+    // cache.put(0x00000007, 30); 
+    // cache.put(0x0000000C, 40);  
+    // cache.put(0x00000010, 50);  
     cout<<"after inserting into cache\n";
-    cache.display();
+    // cache.display();
 
     cache.get(0x00000000);  
+    cache.get(0x00000000);  
+    cache.display();
     cache.get(0x00000004);  
+    cache.display();
+
     cache.get(0x00000010); 
+    cache.display();
+
     cache.get(0x00000014); 
     cache.display();
 

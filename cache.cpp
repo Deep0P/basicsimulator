@@ -112,17 +112,24 @@ class DirectMappedCache{
         void display()
         {
             cout<<" Cache Content\n";
+            cout<<"Index\t|\tTag\t|\tValid\t|\tData\n";
+
             
 
             for(int i=0;i<numBlocks;i++)
             {
-                cout<< "Index " << i << ": Tag = " << cacheBlock[i].getTag() 
-                    << ", Valid = " << (cacheBlock[i].getValid() ? "true" : "false") 
-                    << ", Data = ";
+                cout<< i << "\t|\t" << cacheBlock[i].getTag() 
+                    << "\t|\t" << (cacheBlock[i].getValid() ? "true" : "false") 
+                    << "\t|\t";
                 vector<int> data=cacheBlock[i].getData();
             for (int j = 0; j < blockSize; ++j) {
                 cout<<data[j]<<" ";
             }
+            // cout<<endl;
+            // for(int k=0;k<100;k++)
+            // {
+            //     cout<<"_";
+            // }
             cout<<endl;
             }
         }
@@ -153,8 +160,14 @@ int main()
     cache.display();
 
     cache.get(0x00000000);  
+    cache.display();
+
     cache.get(0x00000004);  
+    cache.display();
+
     cache.get(0x00000010);  
+    cache.display();
     cache.get(0x00000014);  
+    cache.display();
 
 }
